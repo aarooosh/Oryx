@@ -56,13 +56,19 @@ Pseudo-instructions have been condensed to 32 unique instructions.
 The final instruction format is as follows:
 
 **I Type** : 
+
 **op**  **func**    **rd**  **rs**  **imm/shamt**
+
 3       2           5       5       16 (1-bit ignored)
 
 **R Type** : 
+
 **op**  **func**    **rd**  **rs**  **rt**
+
 3       2           5       5       5 (12-bits ignored)
 
 **J Type** : 
+
 **op**  **func**    **address**
+
 3       2           27
