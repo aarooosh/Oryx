@@ -65,4 +65,4 @@ The final instruction format is as follows:
 
 **J Type** : 
 **op**  **func**    **address**
-3       2           27
+3       1           28 
