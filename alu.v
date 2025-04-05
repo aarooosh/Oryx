@@ -19,11 +19,10 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module adder(input [31:0] a,input [31:0] b,input cin,output reg [31:0] op);
-always begin
-op <= a+b+cin;
-end
+module adder(input [31:0] a,input [31:0] b,input cin,output wire [31:0] op);
+assign op = a+b+cin;
 endmodule
+//this is the adder module , using muxes the inputs to it will be controlled
 
 
 module alu(
@@ -34,48 +33,51 @@ output reg [31:0] lo,
 input [3:0] inst,
 output reg [31:0] o,
 output cout,
-output alu_go_ahead,
-output reg overflow
+output alu_go_ahead, //this is for the branch condition
+output reg overflow //this is for the EPC
     );
-    reg [31:0] d1;
-    reg [31:0] d2;
+    wire [31:0] d2;
+    wire [31:0] aa;
+    wire [31:0] bb;
     wire [31:0] om;
     reg cin;
-    adder ADD(d1,d2,cin,om);
-    
-    always begin
-    o = om;
+    adder ADD(a,d2,cin,om);
+    assign aa = ~a;
+    assign bb = ~b;
+    assign d2= (inst == 4'b0010 || inst == 4'b0011)?bb:b;
     //solve multi driven net using muxes
+    always @(*) begin
     case (inst)
     4'b0000: //addu
     begin
-           d1 = a;d2=b;
+           o = om;
+           overflow = 1'b0;
     end
     4'b0001://add
     begin
-            d1=a;d2=b;
+            o = om;
             overflow = (~(a[31]^b[31])&(b[31]^o[31]));
     end        
     4'b0010:
     begin
-            d1=a;d2=~b;cin=1;
+                cin=1;
     end
     4'b0011:
     begin
-            d1=a;d2=~b;cin=1;
-            overflow = (~(a[31]^b[31])&(b[31]^o[31]));
+        cin=1;
     end
     4'b0100:
     begin
-            o = ~(a&b);
+            o = (aa|bb);
     end
     4'b0101:
     begin
-            o = ~(a|b);
+            o = (aa&bb);
     end
     4'b0110:
     begin
             {hi,lo} = a*b;
+            o = 32'd0;
             //store this in hi and lo
     end
     4'b0111:
@@ -84,17 +86,16 @@ output reg overflow
     end
     4'b1000:
     begin
-            o <= a>>b;
+            o = a>>b;
     end
     4'b1001:
     begin
-            o <= {a[31],a[30:0]<<b};
+            o = $signed(a)<<<b;
     end
     4'b1010:
     begin
-            o <= {a[31],a[30:0]>>b};
+            o = $signed(a)>>>b;
     end
     endcase
-    end
-    assign op = o;
+end
 endmodule

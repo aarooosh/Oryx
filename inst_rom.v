@@ -1,6 +1,7 @@
 module inst_rom(
     input [31:0] addr,
-    output [31:0] inst
+    input clk,
+    output reg [31:0] inst
     );
 
     reg [7:0] insts [0:4095];
@@ -14,5 +15,7 @@ module inst_rom(
     end
 
     assign addr2 = addr[9:0]<<2;
-    assign inst = {insts[addr2], insts[addr2+12'd1], insts[addr2+12'd2],insts[addr2+12'd3]};
+    always @(posedge clk) begin
+    inst = {insts[addr2], insts[addr2+12'd1], insts[addr2+12'd2],insts[addr2+12'd3]};
+    end
 endmodule
