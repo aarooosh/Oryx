@@ -77,6 +77,8 @@ module processor(
     assign rt_imm = i_r?rt_out:sgn_ext_imm;
     assign w_data_reg = write_reg_en?r_data_stk:o;
 
+    //setting up the wires
+
     always @(negedge clk) 
     begin
         pc = pc+32'd4;//update PC is happening by default everywhere
