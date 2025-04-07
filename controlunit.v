@@ -27,13 +27,18 @@ output reg i_r,
 output reg write_reg_en,
 output reg regfile_src_oalu_st,
 output reg [3:0] ALU_inst,
-output reg jump
+output reg jump,
+output wr_en_stk,
+output br_inst
     );
     
      always begin
         case (ir[31:29])
             3'd0 : //arithmetic
             begin
+                br_inst = 1'b0;
+                jump    = 1'b0;
+                wr_en_stk = 1'b0;
             case (ir[28:27])
                 2'd0:
                 begin
@@ -67,6 +72,9 @@ output reg jump
             end
             3'd6 : //logic gate
             begin
+                jump    = 1'b0;
+                wr_en_stk = 1'b0;
+                br_inst = 1'b0;
             case (ir[28:27])
                 2'd0:
                 begin
@@ -100,24 +108,68 @@ output reg jump
             end
             3'd7 : //shift gate
             begin
+                jump    = 1'b0;
+                wr_en_stk = 1'b0;
+                br_inst = 1'b0;
                 ALU_inst =  (ir[28:27]+4'd7);
                 i_r = 1'b0;
                 write_reg_en = 1'b1;
                 regfile_src_oalu_st = 1'b0;
             end
             3'd1 : //data
-            
+            begin
+                jump    = 1'b0;
+                br_inst = 1'b0;
+                if(ir[28:27] == 2'b11)
+                begin//sub
+                    ALU_inst=4'd2;
+                    i_r = 1'b1;
+                    write_reg_en = 1'b1;
+                    regfile_src_oalu_st = 1'b0;
+                    wr_en_stk = 1'b0;
+                end
+                else if(ir[28:27] == 2'b00)
+                begin//lw
+                    ALU_inst = 4'd0;
+                    regfile_src_oalu_st = 1'b1;
+                    write_reg_en = 1'b1;
+                    i_r          = 1'b0;
+                    wr_en_stk = 1'b0;
+                end
+                else if(ir[28:27] == 2'b01)
+                begin//sw
+                    ALU_inst = 4'd0;
+                    //regfile_src_oalu_st = 1'b1;
+                    write_reg_en = 1'b0;
+                    i_r          = 1'b0;
+                    wr_en_stk = 1'b1;
+                end
+                else
+                begin//lui
+                    ALU_inst = 4'd0;
+                    //regfile_src_oalu_st = 1'b1;
+                    write_reg_en = 1'b1;
+                    i_r          = 1'b0;
+                    wr_en_stk = 1'b0;
+                end
+            end
             3'd2 : //branch
-            3'd3 : //jump
-            if (ir[28]) 
-            begin
-            jump = 1'b1;
-            end
-            else
-            begin
-            jump = 1'b1;
             
+            3'd3 : //jump
+            begin
+                jump = 1'b1;
+                wr_en_stk = 1'b0;
+                write_reg_en = 1'b0;
             end
+            // if (ir[28]) 
+            // begin
+            // jump = 1'b1;
+            // end
+            // else
+            // begin
+            // jump = 1'b1;
+            
+            // end
             3'd4 : //comparison
             3'd5 : //FLOP
         endcase

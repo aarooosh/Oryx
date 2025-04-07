@@ -39,16 +39,18 @@ module processor(
     reg [31:0] temp;
     wire jump;
     wire rst;
+    wire alu_go_ahead;
 
     //connecting wires
     wire [31:0] rs_out; //read o/p from register file
     wire [31:0] rt_out; //read o/p from register file
     wire [31:0] o;      //o/p from ALU
     wire [31:0] r_data_stk;
+    wire [31:0] w_data_reg;
 
     //    regfile();
     inst_rom inst_rom(pc,~clk,ir); // this is combinational ! constant update
-    regfile regfile(clk,rst,wr_en,r1,r2,w1,w_data_reg,rs_out,rt_out);
+    regfile regfile(clk,rst,write_reg_en,r1,r2,w1,w_data_reg,rs_out,rt_out);
     stack stack(o,rs_out,wr_en_stk,clk,r_data_stk);
 
         //for now i'm doing it here instead of a separate module
@@ -60,7 +62,9 @@ module processor(
         write_reg_en,
         regfile_src_oalu_st,
         ALU_inst,
-        jump
+        jump,
+        wr_en_stk,
+        br_inst
     );
 
     alu ALU(
@@ -68,7 +72,7 @@ module processor(
         rt_imm,
         hi,
         lo,
-        inst,
+        ALU_inst,
         o,
         cout,
         alu_go_ahead, //this is for the branch condition
@@ -78,16 +82,17 @@ module processor(
     //first set of MUXes
     assign rt_imm = i_r?rt_out:sgn_ext_imm;
     assign w_data_reg = write_reg_en?r_data_stk:o;
+    assign w_data_reg[31:16] = (ir[31:26]==5'b00110)?ir[15:0]:w_data_reg[31:16];//implements LUI
     assign w1         = ir[26:22];
     assign r1         = ir[21:17];
     assign r2         = ir[16:12];
     assign sgn_ext_imm= {ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[15:0]}; 
+    assign branch = (br_inst)&&(alu_go_ahead);
 
     //setting up the wires
 
     always @(negedge clk) 
     begin
-        pc = pc+32'd4;//update PC is happening by default everywhere
         if (rst) //setting reset
         begin
             pc <= 32'd0;
@@ -101,6 +106,7 @@ module processor(
         begin
         if (branch==1'b1 && jump==1'b0) 
             begin
+                pc = pc+32'd4;//update PC is happening by default everywhere
                 //this is if branch is true and it is not a jump
                 temp[17:2] = ir[15:0];
                 temp[1:0] = 2'b00;
@@ -109,15 +115,19 @@ module processor(
                 //sign extending (highly cursed) and adding separately
                 pc = pc+temp;
             end
-        
-        else if(jump) 
+        else if(branch==1'b0 && jump==1'b0) begin
+            pc = pc+32'd4;//update PC is happening by default everywhere
+        end
+        else
+        //jump is true 
             begin
-            if (branch == 1'b0)
+            if (ir[28] == 1'b0)
                 pc[29:0] = {ir[27:0],2'b00};
                 //replace last 30 bits of PC to jump
             else
                 pc = rs_out;
             end
+        
         end
         
         
