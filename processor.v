@@ -38,16 +38,18 @@ module processor(
     wire regfile_src_oalu_st;
     reg [31:0] temp;
     wire jump;
+    wire rst;
 
     //connecting wires
     wire [31:0] rs_out; //read o/p from register file
     wire [31:0] rt_out; //read o/p from register file
     wire [31:0] o;      //o/p from ALU
+    wire [31:0] r_data_stk;
 
     //    regfile();
     inst_rom inst_rom(pc,~clk,ir); // this is combinational ! constant update
     regfile regfile(clk,rst,wr_en,r1,r2,w1,w_data_reg,rs_out,rt_out);
-    stack stack(addr,rs_out,wr_en_stk,clk,r_data_stk);
+    stack stack(o,rs_out,wr_en_stk,clk,r_data_stk);
 
         //for now i'm doing it here instead of a separate module
         //each case will set specific control signals like branch,i/r,r/w,wr_en,ALU_go_ahead etc
@@ -76,6 +78,10 @@ module processor(
     //first set of MUXes
     assign rt_imm = i_r?rt_out:sgn_ext_imm;
     assign w_data_reg = write_reg_en?r_data_stk:o;
+    assign w1         = ir[26:22];
+    assign r1         = ir[21:17];
+    assign r2         = ir[16:12];
+    assign sgn_ext_imm= {ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[15:0]}; 
 
     //setting up the wires
 

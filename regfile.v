@@ -5,7 +5,7 @@ module regfile(clk,rst,wr_en,r1,r2,w1,data,rout1,rout2);
     input wr_en,clk,rst;
     output [31:0] rout1,rout2;
     integer i;
-    always @ (posedge clk) begin
+    always @ (negedge clk) begin
         if(rst) begin
             for(i=0;i<32;i=i+1) begin
                 regs[i] <= 32'd0;
