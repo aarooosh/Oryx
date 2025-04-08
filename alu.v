@@ -40,31 +40,33 @@ output reg overflow //this is for the EPC
     wire [31:0] aa;
     wire [31:0] bb;
     wire [31:0] om;
-    reg cin;
+    wire cin;
     adder ADD(a,d2,cin,om);
     assign aa = ~a;
     assign bb = ~b;
-    assign d2= (inst == 4'b0010 || inst == 4'b0011)?bb:b;
+    assign d2= (inst == 4'b0010 || inst == 4'b0011 || inst == 4'b1011|| inst == 4'b1110)?bb:b;
+    assign cin= (inst == 4'b0010 || inst == 4'b0011  || inst == 4'b1011|| inst == 4'b1110)?1'b1:1'b0;
     //solve multi driven net using muxes
     always @(*) begin
     case (inst)
     4'b0000: //addu
     begin
            o = om;
-           overflow = 1'b0;
+           //overflow = (a[31]&&b[31]); screw it , no overflow for unsigned
     end
-    4'b0001://add
+    4'b0001: //add
     begin
             o = om;
-            overflow = (~(a[31]^b[31])&(b[31]^o[31]));
+            overflow = (~(a[31]^b[31])&(b[31]^om[31]));
     end        
     4'b0010:
     begin
-                cin=1;
+            o = om;
+            overflow = (~(a[31]^b[31])&(b[31]^om[31]));
     end
     4'b0011:
     begin
-        cin=1;
+            o = om;
     end
     4'b0100:
     begin
@@ -95,6 +97,33 @@ output reg overflow //this is for the EPC
     4'b1010:
     begin
             o = $signed(a)>>>b;
+    end
+    4'b1011: //slt
+    begin
+        overflow = (~(a[31]^b[31])&(b[31]^om[31]));
+        if(overflow)
+        begin
+                o = {31'd0,~a[31]};
+                alu_go_ahead = ~a[31];
+        end
+        else
+        begin
+                o = {31'd0,(a[31]^b[31])?a[31]:1'b1};
+                alu_go_ahead = (a[31]^b[31])?a[31]:1'b1;
+        end
+    end
+    4'b1100:
+    begin
+        o = {31'd0,(a==b)?1'b1:1'b0};
+        alu_go_ahead = (a==b)?1'b1:1'b0;
+    end
+    4'b1101:
+    begin
+        alu_go_ahead = (a==b)?1'b0:1'b1;
+    end
+    4'b1110:
+    begin
+        //deal with unsigned after quantum class 
     end
     endcase
 end

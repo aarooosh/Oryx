@@ -108,9 +108,10 @@ module processor(
             begin
                 pc = pc+32'd4;//update PC is happening by default everywhere
                 //this is if branch is true and it is not a jump
-                temp[17:2] = ir[15:0];
+                temp[13:2] = ir[11:0];
+                //FATAL ERROR , now branch is only 12 bits relative
                 temp[1:0] = 2'b00;
-                temp[31:18] = {ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16]};
+                temp[31:14] = {ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16]};
                 // do this using wires
                 //sign extending (highly cursed) and adding separately
                 pc = pc+temp;
