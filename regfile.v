@@ -16,6 +16,8 @@ module regfile(clk,rst,wr_en,r1,r2,w1,data,rout1,rout2);
         regs[w1] <= data;
         end
     end
-    assign rout1 = regs[r1];
-    assign rout2 = regs[r2];
+    assign rout1 = (r1==5'd0)?32'd0:regs[r1];
+    assign rout2 = (r2==5'd0)?32'd0:regs[r2];
+    // assign rout1 = 32'd0;
+    // assign rout2 = 32'd0;
 endmodule

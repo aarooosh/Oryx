@@ -21,7 +21,6 @@
 
 
 module control_unit(
-
 input [31:0] ir,
 output reg i_r,
 output reg write_reg_en,
@@ -42,6 +41,7 @@ output reg fen
                 jump    = 1'b0;
                 wr_en_stk = 1'b0;
                 fen = 1'b0;
+                flopinst = 2'b00;
             case (ir[28:27])
                 2'd0:
                 begin
@@ -79,6 +79,7 @@ output reg fen
                 wr_en_stk = 1'b0;
                 br_inst = 1'b0;
                 fen = 1'b0;
+                flopinst = 2'b00;
             case (ir[28:27])
                 2'd0:
                 begin
@@ -120,12 +121,14 @@ output reg fen
                 i_r = 1'b0;
                 write_reg_en = 1'b1;
                 regfile_src_oalu_st = 1'b0;
+                flopinst = 2'b00;
             end
             3'd1 : //data
             begin
                 fen = 1'b0;
                 jump    = 1'b0;
                 br_inst = 1'b0;
+                flopinst = 2'b00;
                 if(ir[28:27] == 2'b11)
                 begin//sub
                     ALU_inst=4'd2;
@@ -145,7 +148,7 @@ output reg fen
                 else if(ir[28:27] == 2'b01)
                 begin//sw
                     ALU_inst = 4'd0;
-                    // regfile_src_oalu_st = 1'b1;
+                    regfile_src_oalu_st = 1'b1;
                     write_reg_en = 1'b0;
                     i_r          = 1'b0;
                     wr_en_stk = 1'b1;
@@ -153,7 +156,7 @@ output reg fen
                 else
                 begin//lui
                     ALU_inst = 4'd0;
-                    // regfile_src_oalu_st = 1'b1;
+                    regfile_src_oalu_st = 1'b1;
                     write_reg_en = 1'b1;
                     i_r          = 1'b0;
                     wr_en_stk = 1'b0;
@@ -169,6 +172,8 @@ output reg fen
                 wr_en_stk = 1'b0;
                 write_reg_en = 1'b0;
                 i_r = 1'b1;
+                flopinst = 2'b00;
+                regfile_src_oalu_st = 1'b0;
                 case(ir[28:27])
                     2'b00: //branch equal
                     begin
@@ -194,6 +199,11 @@ output reg fen
                 jump = 1'b1;
                 wr_en_stk = 1'b0;
                 write_reg_en = 1'b0;
+                flopinst = 2'b00;
+                i_r = 1'b0;
+                ALU_inst = 4'b0000;
+                br_inst = 1'b0;
+                regfile_src_oalu_st = 1'b0;
             end
             // if (ir[28]) 
             // begin
@@ -212,6 +222,7 @@ output reg fen
                 write_reg_en = 1'b1;
                 regfile_src_oalu_st = 1'b0;
                 wr_en_stk = 1'b0;
+                flopinst = 2'b00;
                 case(ir[28:27])
                     2'b11: //sub u
                     begin

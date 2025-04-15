@@ -24,7 +24,10 @@ module processor(
     input clk,
     input rst,
     output [31:0] om,
-    output [31:0] iro
+    output [31:0] iro,
+    output [31:0] rso,
+    output [31:0] rto,
+    output [3:0] ALUINST
 );
 
     reg [31:0] pc;
@@ -32,8 +35,12 @@ module processor(
     wire [31:0] hi;
     wire [31:0] lo;
     wire [31:0] f0;
+    wire [31:0] rso;
+    wire [31:0] rto;
+    wire [3:0] ALUINST;
     wire [3:0] ALU_inst;
     wire [1:0] flopinst;
+    wire [31:0] sgn_ext_imm;
     
     //control signals
     wire branch;
@@ -100,16 +107,19 @@ module processor(
     );
 
     //first set of MUXes
+    assign sgn_ext_imm= {ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[15:0]}; 
     assign rt_imm = i_r?rt_out:sgn_ext_imm;
     assign w_data_reg = write_reg_en?r_data_stk:o;
     assign w_data_reg[31:16] = (ir[31:26]==5'b00110)?ir[15:0]:w_data_reg[31:16];//implements LUI
     assign w1         = ir[26:22];
     assign r1         = ir[21:17];
     assign r2         = ir[16:12];
-    assign sgn_ext_imm= {ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[15:0]}; 
     assign branch = (br_inst)&&(alu_go_ahead);
     assign om = o;
     assign iro = ir;
+    assign ALUINST = ALU_inst;
+    assign rso = rs_out;
+    assign rto = rt_imm;
 
     //setting up the wires
 
