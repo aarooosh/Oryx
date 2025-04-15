@@ -33,7 +33,7 @@ output reg [31:0] lo,
 input [3:0] inst,
 output reg [31:0] o,
 output cout,
-output alu_go_ahead, //this is for the branch condition
+output reg alu_go_ahead, //this is for the branch condition
 output reg overflow //this is for the EPC
     );
     wire [31:0] d2;

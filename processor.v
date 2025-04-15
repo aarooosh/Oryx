@@ -22,14 +22,18 @@
 
 module processor(
     input clk,
-    input rst
+    input rst,
+    output [31:0] om,
+    output [31:0] iro
 );
 
     reg [31:0] pc;
-    reg [31:0] ir;
-    reg [31:0] hi;
-    reg [31:0] lo;
-    reg [3:0] ALU_inst;
+    wire [31:0] ir;
+    wire [31:0] hi;
+    wire [31:0] lo;
+    wire [31:0] f0;
+    wire [3:0] ALU_inst;
+    wire [1:0] flopinst;
     
     //control signals
     wire branch;
@@ -47,6 +51,12 @@ module processor(
     wire [31:0] o;      //o/p from ALU
     wire [31:0] r_data_stk;
     wire [31:0] w_data_reg;
+    wire fen;
+    wire [4:0] r1;
+    wire [4:0] r2;
+    wire [4:0] w1;
+    wire wr_en_stk;
+    wire [31:0] rt_imm;
 
     //    regfile();
     inst_rom inst_rom(pc,~clk,ir); // this is combinational ! constant update
@@ -64,7 +74,9 @@ module processor(
         ALU_inst,
         jump,
         wr_en_stk,
-        br_inst
+        br_inst,
+        flopinst,
+        fen
     );
 
     alu ALU(
@@ -79,6 +91,14 @@ module processor(
         overflow //this is for the EPC
             );
 
+    flop FPU(
+        rs_out,
+        rt_out,
+        flopinst,
+        fen,
+        f0
+    );
+
     //first set of MUXes
     assign rt_imm = i_r?rt_out:sgn_ext_imm;
     assign w_data_reg = write_reg_en?r_data_stk:o;
@@ -88,6 +108,8 @@ module processor(
     assign r2         = ir[16:12];
     assign sgn_ext_imm= {ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[15:0]}; 
     assign branch = (br_inst)&&(alu_go_ahead);
+    assign om = o;
+    assign iro = ir;
 
     //setting up the wires
 

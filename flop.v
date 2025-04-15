@@ -3,6 +3,7 @@ module flop(
     input [31:0] f1,
     input [31:0] f2,
     input [1:0] flopinst,
+    input fen,
     output reg [31:0] f0
     );
     reg cout;
