@@ -23,6 +23,7 @@
 module processor(
     input clk,
     input rst,
+    input [31:0] ir,
     output [31:0] om,
     output [31:0] iro,
     output [31:0] rso,
@@ -31,13 +32,16 @@ module processor(
 );
 
     reg [31:0] pc;
-    wire [31:0] ir;
+//    wire [31:0] ir;
     wire [31:0] hi;
     wire [31:0] lo;
     wire [31:0] f0;
-    wire [31:0] rso;
-    wire [31:0] rto;
-    wire [3:0] ALUINST;
+//    wire [31:0] iro;
+//    wire [31:0] rso;
+//    wire [31:0] rto;
+//    wire [31:0] rso;
+//    wire [31:0] rto;
+//    wire [3:0] ALUINST;
     wire [3:0] ALU_inst;
     wire [1:0] flopinst;
     wire [31:0] sgn_ext_imm;
@@ -49,7 +53,7 @@ module processor(
     wire regfile_src_oalu_st;
     reg [31:0] temp;
     wire jump;
-    wire rst;
+//    wire rst;
     wire alu_go_ahead;
 
     //connecting wires
@@ -66,8 +70,8 @@ module processor(
     wire [31:0] rt_imm;
 
     //    regfile();
-    inst_rom inst_rom(pc,~clk,ir); // this is combinational ! constant update
-    regfile regfile(clk,rst,write_reg_en,r1,r2,w1,w_data_reg,rs_out,rt_out);
+    //inst_rom inst_rom(pc,~clk,ir); // this is combinational ! constant update
+    regfile regfile1(clk,rst,write_reg_en,r1,r2,w1,w_data_reg,rs_out,rt_out);
     stack stack(o,rs_out,wr_en_stk,clk,r_data_stk);
 
         //for now i'm doing it here instead of a separate module
@@ -109,8 +113,8 @@ module processor(
     //first set of MUXes
     assign sgn_ext_imm= {ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[16],ir[15:0]}; 
     assign rt_imm = i_r?rt_out:sgn_ext_imm;
-    assign w_data_reg = write_reg_en?r_data_stk:o;
-    assign w_data_reg[31:16] = (ir[31:26]==5'b00110)?ir[15:0]:w_data_reg[31:16];//implements LUI
+    assign w_data_reg = write_reg_en?o:r_data_stk;
+    //assign w_data_reg[31:16] = (ir[31:26]==5'b00110)?ir[15:0]:w_data_reg[31:16];//implements LUI
     assign w1         = ir[26:22];
     assign r1         = ir[21:17];
     assign r2         = ir[16:12];
@@ -123,7 +127,7 @@ module processor(
 
     //setting up the wires
 
-    always @(negedge clk) 
+    always @(posedge clk) 
     begin
         if (rst) //setting reset
         begin
@@ -138,7 +142,7 @@ module processor(
         begin
         if (branch==1'b1 && jump==1'b0) 
             begin
-                pc = pc+32'd4;//update PC is happening by default everywhere
+                pc = pc+32'd1;//update PC is happening by default everywhere
                 //this is if branch is true and it is not a jump
                 temp[13:2] = ir[11:0];
                 //FATAL ERROR , now branch is only 12 bits relative
@@ -149,7 +153,7 @@ module processor(
                 pc = pc+temp;
             end
         else if(branch==1'b0 && jump==1'b0) begin
-            pc = pc+32'd4;//update PC is happening by default everywhere
+            pc = pc+32'd1;//update PC is happening by default everywhere
         end
         else
         //jump is true 
@@ -166,5 +170,7 @@ module processor(
         
     end
 
-
+initial begin
+pc = 32'd0;
+end
 endmodule
