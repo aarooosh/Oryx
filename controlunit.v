@@ -47,28 +47,28 @@ output reg fen
                 begin
                 ALU_inst = 4'd0; // add is add in ALU
                 i_r = 1'b1;
-                write_reg_en = 1'b1;
+                write_reg_en <= 1'b1;
                 regfile_src_oalu_st = 1'b0;
                 end
                 2'd1:
                 begin
                 ALU_inst = 4'd0; //addi gets mapped to add in ALU
                 i_r = 1'b0;
-                write_reg_en = 1'b1;
+                write_reg_en <= 1'b1;
                 regfile_src_oalu_st = 1'b0;
                 end
                 2'd2:
                 begin
                 ALU_inst = 4'd1; //addu
                 i_r = 1'b1;
-                write_reg_en = 1'b1;
+                write_reg_en <= 1'b1;
                 regfile_src_oalu_st = 1'b0;
                 end
                 2'd3:
                 begin
                 ALU_inst = 4'd6; //mul
                 i_r = 1'b1;
-                write_reg_en = 1'b0;
+                write_reg_en <= 1'b0;
                 regfile_src_oalu_st = 1'b0;
                 end
             endcase
@@ -85,7 +85,7 @@ output reg fen
                 begin
                 ALU_inst = 4'd4; // nand is nand in ALU
                 i_r = 1'b1;
-                write_reg_en = 1'b1;
+                write_reg_en <= 1'b1;
                 regfile_src_oalu_st = 1'b0;
                 end
                 2'd1:
