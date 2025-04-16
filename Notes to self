@@ -1,5 +1,7 @@
 Notes to self
 
-1) Implement FLOPS
+1) Implement FLOPS               (sort of done a very basic version)
 2) Integrate the efficient memory
 3) Edit the assembler
+
+Also it's a really really good practise to do module testing ... i'm realising this now after a whole lotta painful debugging
